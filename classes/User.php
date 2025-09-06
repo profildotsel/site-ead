@@ -30,8 +30,7 @@ class User {
         if($num > 0) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             
-            // Verificar senha (assumindo que está em texto simples para este exemplo)
-            if($password === $row['password_hash']) {
+            if(password_verify($password, $row['password_hash'])) {
                 $this->id = $row['id'];
                 $this->username = $row['username'];
                 $this->email = $row['email'];
@@ -52,14 +51,16 @@ class User {
         $stmt = $this->conn->prepare($query);
 
         $this->username = htmlspecialchars(strip_tags($this->username));
-        $this->password_hash = htmlspecialchars(strip_tags($this->password_hash));
         $this->email = htmlspecialchars(strip_tags($this->email));
         $this->first_name = htmlspecialchars(strip_tags($this->first_name));
         $this->last_name = htmlspecialchars(strip_tags($this->last_name));
         $this->role = htmlspecialchars(strip_tags($this->role));
 
+        // hash the password before saving to database
+        $password_hashed = password_hash($this->password_hash, PASSWORD_BCRYPT);
+
         $stmt->bindParam(":username", $this->username);
-        $stmt->bindParam(":password_hash", $this->password_hash);
+        $stmt->bindParam(":password_hash", $password_hashed);
         $stmt->bindParam(":email", $this->email);
         $stmt->bindParam(":first_name", $this->first_name);
         $stmt->bindParam(":last_name", $this->last_name);
